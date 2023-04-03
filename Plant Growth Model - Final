@@ -1,0 +1,130 @@
+breed [trees tree]
+
+trees-own [
+  species
+  growth-rate
+  water-requirement
+  nutrient-requirement
+]
+
+globals [
+  nutrient-diffusion-rate
+  water-diffusion-rate
+]
+
+patches-own [
+  nutrient-level
+  water-level
+  replenish-time
+]
+
+to setup-environment
+
+  set nutrient-diffusion-rate (random-float 1.0)
+  set water-diffusion-rate (random-float 1.0)
+
+  ask patches [
+    set pcolor green
+    set nutrient-level nutrient-concentration
+    set water-level water-concentration
+    set replenish-time soil-regrowth-time        ; Wolf Sheep
+    set replenish-time random soil-regrowth-time ; Wolf Sheep
+  ]
+
+end
+
+
+to setup-treeA
+
+  ask trees with [species = "A"][die]
+
+  create-trees treeA-FQ [
+    setxy random-xcor random-ycor
+    set species "A"
+    set shape "tree"
+    set growth-rate ( treeA-GR)
+    set water-requirement ( treeA-WR)
+    set nutrient-requirement (treeA-NR)
+    set color magenta
+  ]
+
+  reset-ticks
+end
+
+to setup-treeB
+
+  ask trees with [species = "B"][die]
+
+  create-trees treeB-FQ [
+    setxy random-xcor random-ycor
+    set species "B"
+    set shape "tree"
+    set growth-rate ( treeB-GR)
+    set water-requirement ( treeB-WR)
+    set nutrient-requirement (treeB-NR)
+    set color red
+  ]
+
+  reset-ticks
+end
+
+to setup-treeC
+
+  ask trees with [species = "C"][die]
+
+  create-trees treeC-FQ [
+    setxy random-xcor random-ycor
+    set species "C"
+    set shape "tree"
+    set growth-rate ( treeC-GR)
+    set water-requirement ( treeC-WR)
+    set nutrient-requirement (treeC-NR)
+    set color cyan
+  ]
+
+  reset-ticks
+end
+
+to diffuse-nutrients
+  diffuse nutrient-level nutrient-diffusion-rate
+end
+
+to diffuse-water
+  diffuse water-level water-diffusion-rate
+end
+
+
+to grow
+  ask trees [
+    let nutrient-needed nutrient-requirement * water-requirement * growth-rate
+
+    if water-level > water-requirement and nutrient-level > nutrient-needed [
+      set size size + growth-rate
+      set nutrient-level nutrient-level - nutrient-needed
+      set water-level water-level - water-requirement
+    ]
+  ]
+end
+
+to replenish-soil                               ;This procedure is used in the Wolf Sheep model
+  if pcolor = green [
+     ifelse replenish-time <= 0
+    [ setup-environment
+      set replenish-time soil-regrowth-time ]
+    [ set replenish-time replenish-time - 1 ]
+  ]
+end
+
+to go
+  diffuse-nutrients
+  diffuse-water
+  grow
+
+  tick
+end
+
+to kill
+  clear-all
+  reset-ticks
+  user-message "Simulation over" stop
+end
